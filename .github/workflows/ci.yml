@@ -2,6 +2,11 @@ name: Run CI checks
 
 on: [pull_request]
 
+env:
+  NX_CLOUD_DISTRIBUTED_EXECUTION: 'true'
+  NX_BRANCH: ${{ github.event.number }}
+  NX_RUN_GROUP: ${{ github.run.id }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,3 +22,18 @@ jobs:
         if: always()
       - run: npm run nx affected -- --target=e2e --base=origin/master --parallel
         if: always()
+      - run: npx @nrwl/nx-cloud stop-all-agents
+
+  agent1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: bahmutov/npm-install@1.4.5
+      - run: npx @nrwl/nx-cloud start-agent
+      
+  agent2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: bahmutov/npm-install@1.4.5
+      - run: npx @nrwl/nx-cloud start-agent
